@@ -1,0 +1,152 @@
+\documentclass[12pt, a4paper]{article}
+
+% ── Codificación y lenguaje ───────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+% ── Márgenes ─────────────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+
+% ── Tipografía y espaciado ────────────────────────────────────────────────
+\usepackage{lmodern}
+\usepackage{setspace}
+\onehalfspacing
+
+% ── Matemáticas ───────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsthm}
+
+% ── Gráficos y tablas ─────────────────────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ── Hipervínculos ─────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=blue]{hyperref}
+
+% ── Referencias APA ───────────────────────────────────────────────────────
+\usepackage{apacite}
+
+% ── Encabezado y pie de página ────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small TP1 — Análisis de Series Temporales}
+\lhead{\small Universidad Austral}
+\rfoot{\thepage}
+
+% ─────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════
+% CARÁTULA
+% ══════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Large \textbf{Universidad Austral}}\\[0.4cm]
+    {\large Maestría en Explotación de Datos y Gestión del Conocimiento}\\[2cm]
+
+    \rule{\linewidth}{0.5pt}\\[0.4cm]
+    {\LARGE \textbf{Trabajo Práctico N\textdegree~1}}\\[0.3cm]
+    {\Large Análisis de Series Temporales}\\[0.3cm]
+    \rule{\linewidth}{0.5pt}\\[2cm]
+
+    \begin{tabular}{rl}
+        \textbf{Autores:}   & Joaquín Stucke \\
+                            & Lucas Pessagno \\
+                            & Christian Pagoto \\[0.6cm]
+        \textbf{Institución:} & Universidad Austral \\[0.6cm]
+        \textbf{Docentes:}  & Rodrigo Del Rosso \\
+                            & Sebastián Calcagno \\[0.6cm]
+        \textbf{Fecha:}     & 23 de abril de 2026 \\
+    \end{tabular}
+
+    \vfill
+\end{titlepage}
+
+% ══════════════════════════════════════════════════════════════════════════
+% RESUMEN EJECUTIVO
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section*{Resumen Ejecutivo}
+\addcontentsline{toc}{section}{Resumen Ejecutivo}
+
+El presente informe desarrolla la aplicación de técnicas de análisis de series temporales
+sobre las series del S\&P~500, el VIX (índice de volatilidad del S\&P~500), el CO\textsubscript{2}
+promedio en la atmósfera según la Oficina Nacional de Administración Oceánica y Atmosférica
+de Estados Unidos (NOAA), y la cantidad de pasajeros aéreos correspondiente al período
+1949--1960 de Box \& Jenkins. En el mismo se aplican técnicas de preprocesamiento de datos,
+análisis exploratorio de las series, tests de autocorrelación y raíces unitarias, estimación
+de modelos SARIMA, evaluación de los modelos entre conjuntos de entrenamiento y testeo,
+comparación de modelos, análisis de diagnóstico de las series generadas (residuos,
+test de Ljung-Box), pronóstico de los modelos, construcción de un modelo SARIMAX, y
+modelado SARIMA estacional.
+
+% ══════════════════════════════════════════════════════════════════════════
+% ÍNDICE DE CONTENIDO
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\tableofcontents
+
+% ══════════════════════════════════════════════════════════════════════════
+% CUERPO DEL INFORME (secciones a completar)
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Introducción}
+
+El análisis de series temporales constituye una rama de la estadística aplicada cuya relevancia se extiende a disciplinas diversas. A diferencia de los métodos estadísticos clásicos que asumen independencia entre observaciones, el análisis de series temporales reconoce explícitamente la estructura de dependencia temporal de los datos, lo que permite modelar y pronosticar fenómenos cuya evolución en el tiempo es de interés analítico (Box, Jenkins, Reinsel \& Ljung, 2015).
+
+En el marco de la materia Análisis de Series Temporales de la Maestría en Explotación de Datos y Gestión del Conocimiento de la Universidad Austral, el presente trabajo práctico tiene por objeto aplicar las técnicas estudiadas sobre cuatro series de naturaleza y dominio heterogéneos. La selección de las series responde tanto a criterios de relevancia empírica como a la diversidad de propiedades estadísticas que exhiben, lo cual enriquece el análisis comparativo.
+
+La primera serie corresponde al índice S\&P~500, indicador de referencia del mercado accionario estadounidense que refleja el desempeño de las 500 empresas de mayor capitalización bursátil del país. La segunda serie es el VIX, que mide la volatilidad del mercado de opciones sobre el S\&P~500. La tercera serie corresponde a las concentraciones atmosféricas de CO\textsubscript{2} registradas por la Oficina Nacional de Administración Oceánica y Atmosférica de los Estados Unidos (NOAA). Finalmente, la cuarta serie es el clásico conjunto de datos de pasajeros aéreos internacionales correspondiente al período 1949--1960, introducido por Box \& Jenkins (1970).
+
+El trabajo se organiza en torno a once puntos analíticos que abarcan desde la exploración descriptiva y el análisis de estacionariedad hasta la estimación de modelos SARIMA y SARIMAX, la evaluación fuera de muestra, el diagnóstico de residuos y el pronóstico. El conjunto de técnicas empleadas permite no solo ajustar modelos adecuados a cada serie, sino también comparar su capacidad predictiva frente a benchmarks alternativos.
+
+\newpage
+\section{Marco Teórico}
+
+\newpage
+\section{Análisis de Resultados}
+
+\subsection{Series originales y estacionariedad}
+
+\subsection{FAS, FAC y FACP}
+
+\subsection{Tests de raíces unitarias}
+
+\subsection{Estimación de modelos SARIMA}
+
+\subsection{Evaluación Train/Test}
+
+\subsection{Comparación con otros modelos}
+
+\subsection{Diagnóstico de residuos}
+
+\subsection{Pronóstico}
+
+\subsection{Modelo SARIMAX}
+
+\subsection{Modelo SARIMA estacional}
+
+\newpage
+\section{Conclusiones}
+
+% ══════════════════════════════════════════════════════════════════════════
+% REFERENCIAS
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\bibliographystyle{apacite}
+\bibliography{referencias}
+
+% ══════════════════════════════════════════════════════════════════════════
+% APÉNDICES
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\appendix
+\section{Apéndice: Código fuente}
+
+\end{document}

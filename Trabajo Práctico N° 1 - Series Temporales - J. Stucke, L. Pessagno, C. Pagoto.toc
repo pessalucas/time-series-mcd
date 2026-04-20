@@ -1,0 +1,17 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{Resumen Ejecutivo}{1}{section*.1}%
+\contentsline {section}{\numberline {1}Introducción}{3}{section.1}%
+\contentsline {section}{\numberline {2}Marco Teórico}{4}{section.2}%
+\contentsline {section}{\numberline {3}Análisis de Resultados}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Series originales y estacionariedad}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}FAS, FAC y FACP}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Tests de raíces unitarias}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Estimación de modelos SARIMA}{5}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Evaluación Train/Test}{5}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Comparación con otros modelos}{5}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Diagnóstico de residuos}{5}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}Pronóstico}{5}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Modelo SARIMAX}{5}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Modelo SARIMA estacional}{5}{subsection.3.10}%
+\contentsline {section}{\numberline {4}Conclusiones}{6}{section.4}%
+\contentsline {section}{\numberline {A}Apéndice: Código fuente}{7}{appendix.Alph1}%
