@@ -19,6 +19,7 @@
 % ── Gráficos y tablas ─────────────────────────────────────────────────────
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{float}
 \usepackage{caption}
 \usepackage{subcaption}
@@ -98,55 +99,836 @@ modelado SARIMA estacional.
 \newpage
 \section{Introducción}
 
-El análisis de series temporales constituye una rama de la estadística aplicada cuya relevancia se extiende a disciplinas diversas. A diferencia de los métodos estadísticos clásicos que asumen independencia entre observaciones, el análisis de series temporales reconoce explícitamente la estructura de dependencia temporal de los datos, lo que permite modelar y pronosticar fenómenos cuya evolución en el tiempo es de interés analítico (Box, Jenkins, Reinsel \& Ljung, 2015).
+El análisis de series temporales constituye una rama de la estadística aplicada cuya relevancia se extiende a disciplinas diversas. A diferencia de los métodos estadísticos clásicos que asumen independencia entre observaciones, el análisis de series temporales reconoce explícitamente la estructura de dependencia temporal de los datos, lo que permite modelar y pronosticar fenómenos cuya evolución en el tiempo es de interés analítico \cite{box2015}.
 
 En el marco de la materia Análisis de Series Temporales de la Maestría en Explotación de Datos y Gestión del Conocimiento de la Universidad Austral, el presente trabajo práctico tiene por objeto aplicar las técnicas estudiadas sobre cuatro series de naturaleza y dominio heterogéneos. La selección de las series responde tanto a criterios de relevancia empírica como a la diversidad de propiedades estadísticas que exhiben, lo cual enriquece el análisis comparativo.
 
-La primera serie corresponde al índice S\&P~500, indicador de referencia del mercado accionario estadounidense que refleja el desempeño de las 500 empresas de mayor capitalización bursátil del país. La segunda serie es el VIX, que mide la volatilidad del mercado de opciones sobre el S\&P~500. La tercera serie corresponde a las concentraciones atmosféricas de CO\textsubscript{2} registradas por la Oficina Nacional de Administración Oceánica y Atmosférica de los Estados Unidos (NOAA). Finalmente, la cuarta serie es el clásico conjunto de datos de pasajeros aéreos internacionales correspondiente al período 1949--1960, introducido por Box \& Jenkins (1970).
+La primera serie corresponde al índice S\&P~500, indicador de referencia del mercado accionario estadounidense que refleja el desempeño de las 500 empresas de mayor capitalización bursátil del país. La segunda serie es el VIX, que mide la volatilidad del mercado de opciones sobre el S\&P~500. La tercera serie corresponde a las concentraciones atmosféricas de CO\textsubscript{2} registradas por la Oficina Nacional de Administración Oceánica y Atmosférica de los Estados Unidos (NOAA). Finalmente, la cuarta serie es el clásico conjunto de datos de pasajeros aéreos internacionales correspondiente al período 1949--1960, introducido por \citeA{box1970}.
 
 El trabajo se organiza en torno a once puntos analíticos que abarcan desde la exploración descriptiva y el análisis de estacionariedad hasta la estimación de modelos SARIMA y SARIMAX, la evaluación fuera de muestra, el diagnóstico de residuos y el pronóstico. El conjunto de técnicas empleadas permite no solo ajustar modelos adecuados a cada serie, sino también comparar su capacidad predictiva frente a benchmarks alternativos.
 
 \newpage
 \section{Marco Teórico}
 
+El análisis de series temporales estudia sucesiones de observaciones ordenadas en el tiempo, con el propósito de describir su comportamiento, identificar patrones subyacentes y elaborar pronósticos \cite{box2008}. Formalmente, una serie temporal se concibe como la realización de un proceso estocástico $\{Y_t\}_{t \in \mathcal{T}}$, en el que cada observación constituye una variable aleatoria cuya distribución puede depender de valores pasados \cite{hamilton1994}.
+
+El concepto central sobre el que descansa la modelización clásica es el de \textbf{estacionariedad débil}: un proceso se considera estacionario si su media y varianza son constantes en el tiempo, y si su función de autocovarianza depende únicamente del rezago entre observaciones y no del instante considerado \cite{pena2010}. Cuando una serie no satisface estas condiciones ---lo que ocurre frecuentemente en variables financieras o macroeconómicas---, es necesario transformarla mediante diferenciaciones o transformaciones logarítmicas antes de proceder a su modelización \cite{enders2009}.
+
+La caracterización de la dependencia temporal se realiza a través de la \textbf{función de autocorrelación} (FAC) y la \textbf{función de autocorrelación parcial} (FACP), herramientas que permiten identificar la estructura de rezagos relevantes del proceso \cite{chatfield2019}. Sobre esta base, la \textbf{metodología Box-Jenkins} establece un procedimiento iterativo de identificación, estimación y diagnóstico para la construcción de modelos de la familia ARIMA y sus extensiones estacionales (SARIMA) y con variables exógenas (SARIMAX) \cite{box2008, hyndman2018}.
+
+La selección entre modelos alternativos se apoya en criterios de información ---como el AIC y el BIC--- que equilibran la bondad de ajuste con la parsimonia del modelo, mientras que la evaluación de la capacidad predictiva se lleva a cabo mediante la partición de la muestra en conjuntos de entrenamiento y testeo \cite{diebold2007}. Finalmente, la validación del modelo requiere verificar que los residuos se comporten como ruido blanco, condición que se contrasta formalmente mediante el test de Ljung-Box \cite{cryer2008}.
+
 \newpage
 \section{Análisis de Resultados}
 
 \subsection{Series originales y estacionariedad}
 
+Una serie $\{Y_t\}$ es \textbf{débilmente estacionaria} si satisface:
+
+\begin{enumerate}
+    \item $E[Y_t] = \mu$ — media constante, independiente de $t$
+    \item $\operatorname{Var}(Y_t) = \sigma^2 < \infty$ — varianza finita y constante
+    \item $\operatorname{Cov}(Y_t, Y_{t-k}) = \gamma(k)$ — autocovarianza depende solo del rezago $k$
+\end{enumerate}
+
+El incumplimiento de estas condiciones produce estimaciones inconsistentes y pronósticos espurios. Las principales causas de no estacionariedad son:
+
+\begin{itemize}
+    \item \textbf{Tendencia determinística:} $E[Y_t] = \mu + \beta t$ — media creciente con $t$
+    \item \textbf{Raíz unitaria estocástica:} $Y_t = Y_{t-1} + \varepsilon_t$ — varianza crece con $t$
+    \item \textbf{Heterocedasticidad:} varianza no constante (frecuente en activos financieros)
+    \item \textbf{Estacionalidad:} componente periódica de período $s$
+\end{itemize}
+
+Las transformaciones habituales para inducir estacionariedad son:
+
+\begin{itemize}
+    \item \textbf{Primera diferencia:} $\Delta Y_t = Y_t - Y_{t-1}$ — elimina tendencias lineales (raíz unitaria)
+    \item \textbf{Log-diferencia:} $r_t = \ln(Y_t/Y_{t-1})$ — elimina tendencia y estabiliza varianza multiplicativa
+    \item \textbf{Diferencia estacional:} $\Delta_s Y_t = Y_t - Y_{t-s}$ — elimina estacionalidad de período $s$
+\end{itemize}
+
+La Figura~\ref{fig:series_niveles} presenta las cuatro series en niveles. El S\&P~500 exhibe una tendencia creciente sostenida con varianza aparentemente estable, mientras que el VIX muestra oscilaciones irregulares en torno a una media aproximadamente constante. El CO\textsubscript{2} combina una tendencia creciente con una estacionalidad anual bien definida. AirPassengers, por su parte, presenta tanto tendencia como estacionalidad de amplitud creciente, lo que sugiere una estructura multiplicativa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_01_cell06.png}
+    \caption{Series originales en niveles: S\&P~500, VIX, CO\textsubscript{2} y AirPassengers.}
+    \label{fig:series_niveles}
+\end{figure}
+
+Con el fin de detectar variaciones en la media y el desvío estándar a lo largo del tiempo, la Tabla~\ref{tab:estadisticas_mitades} reporta las estadísticas descriptivas calculadas sobre cada mitad de la muestra. Para el S\&P~500 se observa un incremento sustancial de la media (de 5982{,}80 a 6783{,}71) junto con una marcada reducción del desvío estándar, indicativa de tendencia. El VIX presenta medias similares en ambas mitades, lo que es consistente con estacionariedad en media. El CO\textsubscript{2} y AirPassengers muestran medias crecientes, confirmando la presencia de tendencia.
+
+\begin{table}[H]
+    \centering
+    \caption{Estadísticas descriptivas por mitades de muestra}
+    \label{tab:estadisticas_mitades}
+    \begin{tabular}{lrrrr}
+        \toprule
+        \textbf{Serie} & \textbf{Media 1\textordfeminine\ mitad} & \textbf{Media 2\textordfeminine\ mitad} & \textbf{Std 1\textordfeminine\ mitad} & \textbf{Std 2\textordfeminine\ mitad} \\
+        \midrule
+        S\&P 500              & 5982{,}80 & 6783{,}71 & 394{,}69 & 133{,}90 \\
+        VIX                   &  101{,}49 &  104{,}98 &  14{,}56 &  12{,}44 \\
+        CO\textsubscript{2} (2010--hoy) & 398{,}07 & 418{,}15 & 5{,}94 & 6{,}34 \\
+        AirPassengers         &  182{,}90 &  377{,}69 &  47{,}70 &  86{,}44 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La Figura~\ref{fig:estadisticas_moviles} complementa el análisis mediante estadísticas móviles (media y desvío estándar rodantes). La media móvil del S\&P~500 exhibe una tendencia creciente clara, mientras que la del VIX fluctúa sin dirección definida. El CO\textsubscript{2} y AirPassengers confirman sus tendencias crecientes. En todos los casos el desvío estándar móvil permite evaluar la homocedasticidad local de cada serie.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_02_cell08.png}
+    \caption{Estadísticas móviles (media y desvío estándar rodantes) para las cuatro series en niveles.}
+    \label{fig:estadisticas_moviles}
+\end{figure}
+
+La Figura~\ref{fig:series_transformadas} presenta las series luego de aplicar las transformaciones necesarias para inducir estacionariedad. El S\&P~500 se transforma mediante log-retornos $r_t = \ln(P_t/P_{t-1})$; el VIX mediante primera diferencia $\Delta\,\text{VIX}_t$; el CO\textsubscript{2} mediante primera diferencia $\Delta\,\text{CO}_{2,t}$; y AirPassengers mediante $\Delta\log(\text{Pas}_t)$. En todos los casos las series resultantes oscilan en torno a cero sin tendencia aparente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_03_cell09.png}
+    \caption{Series transformadas para inducir estacionariedad.}
+    \label{fig:series_transformadas}
+\end{figure}
+
 \subsection{FAS, FAC y FACP}
+
+La \textbf{Función de Autocovarianza Simple (FAS)} mide la covarianza lineal entre la serie y sus propios rezagos:
+$$\hat{\gamma}(k) = \frac{1}{T}\sum_{t=k+1}^{T}(Y_t - \bar{Y})(Y_{t-k} - \bar{Y})$$
+
+La \textbf{Función de Autocorrelación (FAC)} estandariza la FAS para obtener un coeficiente adimensional en $[-1,\,1]$:
+$$\hat{\rho}(k) = \frac{\hat{\gamma}(k)}{\hat{\gamma}(0)}$$
+
+Bajo la hipótesis de ruido blanco, las bandas de confianza aproximadas al 95\,\% son $\pm\,1{,}96/\sqrt{T}$.
+
+La \textbf{Función de Autocorrelación Parcial (FACP)} mide la correlación entre $Y_t$ e $Y_{t-k}$ luego de remover el efecto lineal de los rezagos intermedios $Y_{t-1},\ldots,Y_{t-k+1}$.
+
+El análisis conjunto de la FAC y la FACP permite identificar la estructura del proceso subyacente según los patrones resumidos en la Tabla~\ref{tab:patrones_fac_facp}.
+
+\begin{table}[H]
+    \centering
+    \caption{Patrones de FAC y FACP para la identificación del proceso}
+    \label{tab:patrones_fac_facp}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Patrón FAC} & \textbf{Patrón FACP} & \textbf{Proceso sugerido} \\
+        \midrule
+        Decaimiento exponencial/sinusoidal & Corte en rezago $p$          & AR($p$) \\
+        Corte en rezago $q$                & Decaimiento exponencial      & MA($q$) \\
+        Decaimiento muy lento              & ---                          & Raíz unitaria / no estacionario \\
+        Picos en múltiplos de $s$          & Picos en múltiplos de $s$    & Estacionalidad de período $s$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Tests de raíces unitarias}
 
+El \textbf{test de Dickey-Fuller Aumentado (ADF)} contrasta la hipótesis nula de existencia de raíz unitaria ($H_0: \rho = 1$) frente a la alternativa de estacionariedad ($H_1: \rho < 1$), sobre la regresión auxiliar:
+$$\Delta Y_t = \alpha + \beta t + (\rho - 1)Y_{t-1} + \sum_{j=1}^{p} \phi_j\,\Delta Y_{t-j} + \varepsilon_t$$
+Se rechaza $H_0$ cuando el estadístico es suficientemente negativo, utilizando los valores críticos de MacKinnon. Un $p$-valor pequeño es evidencia en favor de estacionariedad \cite{enders2009}.
+
+El \textbf{test KPSS} \cite{kwiatkowski1992} adopta la hipótesis nula opuesta: $H_0$ estacionariedad frente a $H_1$ raíz unitaria. Un $p$-valor pequeño es aquí evidencia de no estacionariedad. La utilización conjunta de ambos tests permite una caracterización más robusta, ya que sus hipótesis nulas son complementarias \cite{levendis2018}.
+
+La Tabla~\ref{tab:raices_niveles} reporta los resultados de los tests ADF y KPSS aplicados a las series en niveles, y la Tabla~\ref{tab:raices_transf} los mismos tests sobre las series transformadas.
+
+\begin{table}[H]
+    \centering
+    \caption{Tests de raíces unitarias — Series en niveles}
+    \label{tab:raices_niveles}
+    \begin{tabular}{lrrcrrc}
+        \toprule
+        \textbf{Serie} & \textbf{ADF stat} & \textbf{ADF $p$} & \textbf{ADF $H_0$} & \textbf{KPSS stat} & \textbf{KPSS $p$} & \textbf{KPSS $H_0$} \\
+        \midrule
+        S\&P 500 (niveles)   & $-0{,}7655$ & $0{,}9685$ & No rechazo      & $0{,}4528$ & $0{,}0100$ & Rechazo \\
+        VIX (niveles)        & $-3{,}9077$ & $0{,}0118$ & Rechazo         & $0{,}2482$ & $0{,}0100$ & Rechazo \\
+        CO\textsubscript{2} (niveles) & $-3{,}0607$ & $0{,}1159$ & No rechazo & $0{,}0444$ & $0{,}1000$ & No rechazo \\
+        AirPassengers (niv.) & $-2{,}1008$ & $0{,}5457$ & No rechazo      & $0{,}0961$ & $0{,}1000$ & No rechazo \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Tests de raíces unitarias — Series transformadas (primera diferencia / log-retorno)}
+    \label{tab:raices_transf}
+    \begin{tabular}{lrrcrrc}
+        \toprule
+        \textbf{Serie} & \textbf{ADF stat} & \textbf{ADF $p$} & \textbf{ADF $H_0$} & \textbf{KPSS stat} & \textbf{KPSS $p$} & \textbf{KPSS $H_0$} \\
+        \midrule
+        S\&P 500 (log-ret.)  & $-10{,}4430$ & $0{,}0000$ & Rechazo    & $0{,}1085$ & $0{,}1000$ & No rechazo \\
+        VIX ($\Delta$ VIX)   & $-6{,}6934$  & $0{,}0000$ & Rechazo    & $0{,}0141$ & $0{,}1000$ & No rechazo \\
+        CO\textsubscript{2} ($\Delta$ CO\textsubscript{2}) & $-3{,}1554$ & $0{,}0937$ & No rechazo & $0{,}0073$ & $0{,}1000$ & No rechazo \\
+        AirPass. ($\Delta\log$) & $-3{,}1226$ & $0{,}1010$ & No rechazo & $0{,}0181$ & $0{,}1000$ & No rechazo \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La Tabla~\ref{tab:resumen_integracion} sintetiza las conclusiones sobre el orden de integración de cada serie. Dado que el ADF y el KPSS tienen hipótesis nulas opuestas ---el primero contrasta $H_0$: raíz unitaria, el segundo $H_0$: estacionariedad---, la convergencia de ambos tests brinda evidencia robusta sobre el orden de integración de cada serie.
+
+\begin{table}[H]
+    \centering
+    \caption{Tabla resumen: orden de integración de las series}
+    \label{tab:resumen_integracion}
+    \begin{tabular}{lccll}
+        \toprule
+        \textbf{Serie} & \textbf{ADF (niveles)} & \textbf{KPSS (niveles)} & \textbf{Conclusión} & \textbf{$d$} \\
+        \midrule
+        S\&P 500      & No rechaza $H_0$ & Rechaza $H_0$ & Raíz unitaria $I(1)$                        & 1 \\
+        VIX           & Rechaza $H_0$    & No rechaza $H_0$ & Estacionaria $I(0)$                      & 0 \\
+        CO\textsubscript{2} & No rechaza $H_0$ & Rechaza $H_0$ & $I(1)$ con tendencia determinística  & 1 \\
+        AirPassengers & No rechaza $H_0$ & Rechaza $H_0$ & $I(1)$ con tendencia y estacionalidad       & 1 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \subsection{Estimación de modelos SARIMA}
+\label{subsec:arima_estimacion}
+
+Los modelos ARIMA constituyen la familia de referencia para la modelización de series temporales univariadas. Un proceso \textbf{ARIMA($p$,$d$,$q$)} combina un componente autorregresivo de orden $p$, un componente de media móvil de orden $q$ y $d$ diferenciaciones para inducir estacionariedad. La ecuación general del modelo es:
+$$\phi(B)(1-B)^d Y_t = c + \theta(B)\varepsilon_t$$
+donde $B$ es el operador de rezago, $\phi(B) = 1 - \phi_1 B - \cdots - \phi_p B^p$ el polinomio autorregresivo y $\theta(B) = 1 + \theta_1 B + \cdots + \theta_q B^q$ el polinomio de media móvil \cite{box2008}.
+
+Cuando la serie presenta estacionalidad de período $s$, el modelo se extiende al \textbf{SARIMA($p$,$d$,$q$)($P$,$D$,$Q$)$_s$}, que incorpora polinomios autorregresivo y de media móvil estacionales $\Phi_P(B^s)$ y $\Theta_Q(B^s)$, así como $D$ diferenciaciones estacionales:
+$$\phi_p(B)\,\Phi_P(B^s)\,(1-B)^d(1-B^s)^D\, Y_t = c + \theta_q(B)\,\Theta_Q(B^s)\,\varepsilon_t$$
+Este modelo captura simultáneamente la dinámica de corto plazo, la tendencia estocástica y el patrón estacional de la serie \cite{hyndman2018}.
+
+La selección del orden óptimo del modelo se realiza mediante el \textbf{Criterio de Información de Akaike (AIC)}:
+$$\text{AIC} = -2\,\ell(\hat{\theta}) + 2k$$
+donde $\ell(\hat{\theta})$ es el logaritmo de la verosimilitud maximizada y $k$ el número de parámetros. El AIC penaliza la complejidad del modelo, favoreciendo soluciones parsimoniosas que equilibran ajuste y generalización \cite{diebold2007}.
+
+La estrategia de identificación consiste en un \textit{grid search} sobre $p, q \in \{0,\ldots,3\}$ con $d$ fijo según los resultados de los tests de raíces unitarias del Punto~4. El modelo con menor AIC se selecciona como base, y la significatividad individual de los coeficientes se verifica mediante sus $p$-valores en el resumen de estimación.
+
+A continuación se presentan los seis mejores modelos por AIC para cada serie, seguidos de los coeficientes del modelo seleccionado.
+
+% ── S&P 500 ───────────────────────────────────────────────────────────────
+\begin{table}[H]
+    \centering
+    \caption{S\&P~500 — log-precio ($d=1$): mejores modelos por AIC}
+    \label{tab:aic_sp500}
+    \begin{tabular}{rrrr}
+        \toprule
+        $p$ & $q$ & AIC & BIC \\
+        \midrule
+        1 & 0 & $-1653{,}75$ & $-1646{,}54$ \\
+        0 & 0 & $-1653{,}26$ & $-1649{,}65$ \\
+        1 & 1 & $-1650{,}52$ & $-1639{,}71$ \\
+        3 & 0 & $-1649{,}45$ & $-1635{,}05$ \\
+        3 & 2 & $-1649{,}00$ & $-1627{,}41$ \\
+        2 & 1 & $-1648{,}99$ & $-1634{,}59$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ── VIX ───────────────────────────────────────────────────────────────────
+\begin{table}[H]
+    \centering
+    \caption{VIX — niveles ($d=0$): mejores modelos por AIC}
+    \label{tab:aic_vix}
+    \begin{tabular}{rrrr}
+        \toprule
+        $p$ & $q$ & AIC & BIC \\
+        \midrule
+        3 & 3 & $1845{,}05$ & $1870{,}37$ \\
+        1 & 3 & $1845{,}86$ & $1863{,}94$ \\
+        2 & 3 & $1846{,}32$ & $1868{,}02$ \\
+        3 & 1 & $1851{,}00$ & $1869{,}10$ \\
+        3 & 0 & $1851{,}32$ & $1865{,}80$ \\
+        1 & 2 & $1851{,}99$ & $1866{,}47$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ── CO₂ ───────────────────────────────────────────────────────────────────
+\begin{table}[H]
+    \centering
+    \caption{CO\textsubscript{2} — niveles ($d=1$): mejores modelos por AIC}
+    \label{tab:aic_co2}
+    \begin{tabular}{rrrr}
+        \toprule
+        $p$ & $q$ & AIC & BIC \\
+        \midrule
+        2 & 3 & $404{,}80$ & $427{,}49$ \\
+        3 & 3 & $410{,}67$ & $436{,}60$ \\
+        2 & 2 & $414{,}96$ & $434{,}44$ \\
+        3 & 1 & $415{,}12$ & $434{,}61$ \\
+        2 & 1 & $416{,}07$ & $432{,}33$ \\
+        3 & 2 & $417{,}75$ & $440{,}47$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ── AirPassengers ─────────────────────────────────────────────────────────
+\begin{table}[H]
+    \centering
+    \caption{AirPassengers — log ($d=1$): mejores modelos por AIC}
+    \label{tab:aic_air}
+    \begin{tabular}{rrrr}
+        \toprule
+        $p$ & $q$ & AIC & BIC \\
+        \midrule
+        2 & 1 & $-264{,}12$ & $-249{,}37$ \\
+        3 & 3 & $-263{,}18$ & $-239{,}70$ \\
+        3 & 1 & $-261{,}70$ & $-244{,}05$ \\
+        3 & 2 & $-261{,}43$ & $-240{,}84$ \\
+        1 & 2 & $-257{,}37$ & $-242{,}66$ \\
+        2 & 2 & $-255{,}16$ & $-237{,}51$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La Tabla~\ref{tab:mejores_modelos} resume los modelos seleccionados por AIC mínimo para cada serie.
+
+\begin{table}[H]
+    \centering
+    \caption{Mejores modelos seleccionados por AIC}
+    \label{tab:mejores_modelos}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{Serie} & \textbf{Modelo} & \textbf{AIC} & \textbf{BIC} \\
+        \midrule
+        S\&P 500      & ARIMA(1,\,1,\,0) & $-1653{,}75$ & $-1646{,}54$ \\
+        VIX           & ARIMA(3,\,0,\,3) & $1845{,}05$  & $1870{,}37$  \\
+        CO\textsubscript{2} & ARIMA(2,\,1,\,3) & $404{,}80$ & $427{,}49$ \\
+        AirPassengers & ARIMA(2,\,1,\,1) & $-264{,}12$  & $-249{,}37$  \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Las Tablas~\ref{tab:coef_sp500}--\ref{tab:coef_air} presentan los coeficientes estimados de cada modelo seleccionado, junto con sus errores estándar, estadísticos $z$ y $p$-valores.
+
+\begin{table}[H]
+    \centering
+    \caption{S\&P~500 — ARIMA(1,\,1,\,0): coeficientes estimados}
+    \label{tab:coef_sp500}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Parámetro} & \textbf{Coef.} & \textbf{Std. err.} & \textbf{$z$} & \textbf{$P>|z|$} & \textbf{IC 2,5\,\%} & \textbf{IC 97,5\,\%} \\
+        \midrule
+        ar.L1   & $-0{,}0953$ & $0{,}029$ & $-3{,}328$ & $0{,}001$ & $-0{,}151$ & $-0{,}039$ \\
+        $\sigma^2$ & $0{,}0001$ & $3{,}65\times10^{-6}$ & $36{,}197$ & $0{,}000$ & $0{,}000$ & $0{,}000$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{VIX — ARIMA(3,\,0,\,3): coeficientes estimados}
+    \label{tab:coef_vix}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Parámetro} & \textbf{Coef.} & \textbf{Std. err.} & \textbf{$z$} & \textbf{$P>|z|$} & \textbf{IC 2,5\,\%} & \textbf{IC 97,5\,\%} \\
+        \midrule
+        ar.L1      &  $0{,}8734$ & $0{,}047$ &  $18{,}665$ & $0{,}000$ &  $0{,}782$ &  $0{,}965$ \\
+        ar.L2      &  $0{,}9664$ & $0{,}021$ &  $46{,}118$ & $0{,}000$ &  $0{,}925$ &  $1{,}007$ \\
+        ar.L3      & $-0{,}8397$ & $0{,}041$ & $-20{,}641$ & $0{,}000$ & $-0{,}919$ & $-0{,}760$ \\
+        ma.L1      & $-0{,}1571$ & $0{,}165$ &  $-0{,}952$ & $0{,}341$ & $-0{,}481$ &  $0{,}166$ \\
+        ma.L2      & $-1{,}0372$ & $0{,}176$ &  $-5{,}898$ & $0{,}000$ & $-1{,}382$ & $-0{,}693$ \\
+        ma.L3      &  $0{,}1231$ & $0{,}067$ &   $1{,}826$ & $0{,}068$ & $-0{,}009$ &  $0{,}255$ \\
+        $\sigma^2$ & $39{,}4885$ & $6{,}945$ &   $5{,}686$ & $0{,}000$ & $25{,}877$ & $53{,}100$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{CO\textsubscript{2} — ARIMA(2,\,1,\,3): coeficientes estimados}
+    \label{tab:coef_co2}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Parámetro} & \textbf{Coef.} & \textbf{Std. err.} & \textbf{$z$} & \textbf{$P>|z|$} & \textbf{IC 2,5\,\%} & \textbf{IC 97,5\,\%} \\
+        \midrule
+        intercepto & $0{,}0564$  & $0{,}005$ &  $11{,}359$ & $0{,}000$ &  $0{,}047$ &  $0{,}066$ \\
+        ar.L1      & $1{,}6480$  & $0{,}040$ &  $41{,}243$ & $0{,}000$ &  $1{,}570$ &  $1{,}726$ \\
+        ar.L2      & $-0{,}9185$ & $0{,}038$ & $-24{,}301$ & $0{,}000$ & $-0{,}993$ & $-0{,}844$ \\
+        ma.L1      & $-1{,}4955$ & $0{,}239$ &  $-6{,}251$ & $0{,}000$ & $-1{,}964$ & $-1{,}027$ \\
+        ma.L2      & $0{,}1837$  & $0{,}195$ &   $0{,}942$ & $0{,}346$ & $-0{,}198$ &  $0{,}566$ \\
+        ma.L3      & $0{,}2739$  & $0{,}145$ &   $1{,}890$ & $0{,}059$ & $-0{,}010$ &  $0{,}558$ \\
+        $\sigma^2$ & $0{,}4002$  & $0{,}089$ &   $4{,}490$ & $0{,}000$ &  $0{,}225$ &  $0{,}575$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{AirPassengers — ARIMA(2,\,1,\,1): coeficientes estimados}
+    \label{tab:coef_air}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Parámetro} & \textbf{Coef.} & \textbf{Std. err.} & \textbf{$z$} & \textbf{$P>|z|$} & \textbf{IC 2,5\,\%} & \textbf{IC 97,5\,\%} \\
+        \midrule
+        intercepto &  $0{,}0042$ & $0{,}001$ &  $5{,}956$ & $0{,}000$ &  $0{,}003$ &  $0{,}006$ \\
+        ar.L1      &  $1{,}0001$ & $0{,}079$ & $12{,}591$ & $0{,}000$ &  $0{,}844$ &  $1{,}156$ \\
+        ar.L2      & $-0{,}4196$ & $0{,}087$ & $-4{,}850$ & $0{,}000$ & $-0{,}589$ & $-0{,}250$ \\
+        ma.L1      & $-0{,}9992$ & $0{,}821$ & $-1{,}217$ & $0{,}224$ & $-2{,}609$ &  $0{,}610$ \\
+        $\sigma^2$ &  $0{,}0081$ & $0{,}006$ &  $1{,}250$ & $0{,}211$ & $-0{,}005$ &  $0{,}021$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+En relación con la significatividad individual de los coeficientes, se observa que algunos parámetros presentan $p$-valores superiores a $0{,}05$ en los modelos seleccionados: ma.L1 y ma.L3 en el ARIMA(3,0,3) del VIX, ma.L2 y ma.L3 en el ARIMA(2,1,3) del CO\textsubscript{2}, y ma.L1 en el ARIMA(2,1,1) de AirPassengers. Esto indica que, bajo el test $H_0: \theta_i = 0$, no existe evidencia suficiente para rechazar que dichos coeficientes sean iguales a cero.
+
+No obstante, la selección de estos modelos se fundamenta en el criterio AIC, que penaliza la complejidad y favorece soluciones que equilibran ajuste y parsimonia. Dado que los modelos seleccionados minimizan el AIC dentro del espacio de búsqueda, se opta por mantenerlos como modelos base. Los coeficientes no significativos constituyen una limitación a considerar en la interpretación, pero no invalidan la selección, en línea con lo señalado por Hyndman \& Athanasopoulos (2018).
 
 \subsection{Evaluación Train/Test}
 
+La evaluación fuera de muestra (\textit{out-of-sample}) constituye el criterio para medir la capacidad predictiva de un modelo. A diferencia de las métricas calculadas sobre el conjunto de entrenamiento, que pueden favorecer modelos sobreajustados, la evaluación sobre datos no vistos por el modelo permite estimar su desempeño real ante observaciones futuras \cite{diebold2007}. Se emplea una partición 80/20: el 80\,\% de las observaciones se destina al entrenamiento y el 20\,\% restante al testeo. El modelo se estima exclusivamente sobre el conjunto de entrenamiento y se generan pronósticos en modo \textit{one-step-ahead} o multistep sobre el conjunto de testeo, comparando los valores predichos con los observados.
+
+Las métricas de evaluación utilizadas son:
+$$\text{RMSE} = \sqrt{\frac{1}{h}\sum_{t=1}^{h}(y_t-\hat{y}_t)^2}, \qquad
+  \text{MAE}  = \frac{1}{h}\sum_{t=1}^{h}|y_t-\hat{y}_t|$$
+$$\text{MAPE} = \frac{100}{h}\sum_{t=1}^{h}\left|\frac{y_t-\hat{y}_t}{y_t}\right|, \qquad
+  R^2 = 1 - \frac{\sum_{t=1}^{h}(y_t-\hat{y}_t)^2}{\sum_{t=1}^{h}(y_t-\bar{y})^2}$$
+
+El RMSE y el MAE penalizan el error absoluto en las unidades originales de la serie, siendo el RMSE más sensible a errores grandes. El MAPE expresa el error en términos porcentuales, lo que facilita la comparación entre series de distinta escala. El $R^2$ mide la proporción de varianza explicada por el modelo: valores negativos indican que el modelo predice peor que una línea horizontal (media de la serie).
+
+La Figura~\ref{fig:traintest} presenta los pronósticos de cada modelo sobre el conjunto de testeo, junto con los intervalos de confianza al 95\,\%.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_12_cell22.png}
+    \caption{Evaluación Train/Test 80/20: pronósticos ARIMA vs.\ valores reales para las cuatro series.}
+    \label{fig:traintest}
+\end{figure}
+
+La Tabla~\ref{tab:metricas_test} resume las métricas obtenidas sobre el conjunto de testeo.
+
+\begin{table}[H]
+    \centering
+    \caption{Métricas de evaluación — conjunto de testeo (20\,\%)}
+    \label{tab:metricas_test}
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Serie} & \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{$R^2$} \\
+        \midrule
+        S\&P 500      & ARIMA(1,1,0) & $237{,}24$ & $172{,}59$ & $2{,}60$  & $-1{,}0828$ \\
+        VIX           & ARIMA(3,0,3) &  $18{,}87$ &  $15{,}20$ & $12{,}65$ & $-1{,}9831$ \\
+        CO\textsubscript{2} & ARIMA(2,1,3) & $2{,}80$ & $2{,}27$ & $0{,}53$ & $0{,}2770$ \\
+        AirPassengers & ARIMA(2,1,1) &  $86{,}53$ &  $76{,}94$ & $18{,}77$ & $-0{,}2265$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los resultados reflejan comportamientos diferentes según la naturaleza de cada serie. El CO\textsubscript{2} obtiene el mejor desempeño relativo ($R^2 = 0{,}28$, MAPE $= 0{,}53$\,\%), consistente con su tendencia creciente suave y predecible. El S\&P~500 y el VIX presentan $R^2$ negativos, lo que indica que el modelo ARIMA no supera a una predicción ingenua basada en la media; esto es esperable en series financieras de alta volatilidad, donde los movimientos futuros son esencialmente impredecibles a partir de la estructura lineal de la serie \cite{tsay2005}. AirPassengers exhibe un $R^2$ levemente negativo, probablemente debido a que el modelo ARIMA sin componente estacional no captura adecuadamente el patrón periódico de la serie, aspecto que se aborda en la Sección~\ref{subsec:sarima_estacional}.
+
 \subsection{Comparación con otros modelos}
+
+Un modelo predictivo solo agrega valor si supera a \textit{benchmarks} simples. La Tabla~\ref{tab:modelos_benchmark} presenta los tres modelos comparados, junto con su descripción y supuesto clave.
+
+\begin{table}[H]
+    \centering
+    \caption{Modelos comparados y sus supuestos}
+    \label{tab:modelos_benchmark}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Modelo} & \textbf{Descripción} & \textbf{Supuesto clave} \\
+        \midrule
+        ARIMA     & Seleccionado por AIC (Sección~\ref{subsec:arima_estimacion}) & Estructura AR/MA lineal \\
+        Naïve     & $\hat{y}_{T+h} = y_T$ para todo $h$                           & Random walk sin deriva \\
+        Holt ETS-AAN & Suavizado exponencial con tendencia aditiva               & Tendencia local actualizada por observación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El \textbf{modelo Naïve} constituye el benchmark más elemental: el pronóstico para cualquier horizonte $h$ es simplemente el último valor observado. Es el modelo implícito de un proceso \textit{random walk} sin deriva y representa el piso mínimo que cualquier modelo más complejo debería superar \cite{hyndman2018}.
+
+El \textbf{modelo de Holt} (ETS-AAN, \textit{Error-Trend-Season: Additive-Additive-None}) es una extensión del suavizado exponencial simple que incorpora una estimación local de la tendencia. 
+
+El \textbf{modelo ARIMA} seleccionado en la Sección anterior incorpora la estructura de dependencia lineal de la serie, capturando tanto la autocorrelación de corto plazo como la tendencia estocástica mediante diferenciación.
+
+La comparación de los tres modelos permite determinar si la complejidad adicional del ARIMA se traduce en una mejora efectiva de la capacidad predictiva frente a alternativas más simples \cite{diebold2007}. La Tabla~\ref{tab:comparacion_modelos} presenta las métricas obtenidas sobre el conjunto de testeo para los tres modelos y las cuatro series.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparación de modelos — conjunto de testeo (20\,\%)}
+    \label{tab:comparacion_modelos}
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Serie} & \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{$R^2$} \\
+        \midrule
+        \multirow{3}{*}{S\&P 500}
+            & ARIMA(1,1,0)  & $237{,}24$ & $172{,}59$ & $2{,}60$ & $-1{,}0828$ \\
+            & Naïve         & $236{,}36$ & $171{,}58$ & $2{,}59$ & $-1{,}0674$ \\
+            & Holt ETS-AAN  & $394{,}71$ & $315{,}33$ & $4{,}73$ & $-4{,}7654$ \\
+        \midrule
+        \multirow{3}{*}{VIX}
+            & ARIMA(3,0,3)  &  $18{,}87$ &  $15{,}20$ & $12{,}65$ & $-1{,}9831$ \\
+            & Naïve         &  $16{,}25$ &  $12{,}46$ & $10{,}27$ & $-1{,}2120$ \\
+            & Holt ETS-AAN  &  $19{,}55$ &  $15{,}61$ & $12{,}96$ & $-2{,}2028$ \\
+        \midrule
+        \multirow{3}{*}{CO\textsubscript{2}}
+            & ARIMA(2,1,3)  &   $2{,}80$ &   $2{,}27$ &  $0{,}53$ &  $0{,}2770$ \\
+            & Naïve         &   $7{,}71$ &   $6{,}97$ &  $1{,}64$ & $-4{,}4818$ \\
+            & Holt ETS-AAN  &  $32{,}47$ &  $27{,}63$ &  $6{,}49$ & $-96{,}1464$ \\
+        \midrule
+        \multirow{3}{*}{AirPassengers}
+            & ARIMA(2,1,1)  &  $86{,}53$ &  $76{,}94$ & $18{,}77$ & $-0{,}2265$ \\
+            & Naïve         &  $93{,}13$ &  $81{,}45$ & $20{,}20$ & $-0{,}4209$ \\
+            & Holt ETS-AAN  & $122{,}63$ & $109{,}91$ & $27{,}63$ & $-1{,}4636$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los resultados permiten extraer conclusiones diferenciadas por serie. En el \textbf{S\&P~500}, los tres modelos presentan $R^2$ negativos y métricas similares, siendo el Naïve marginalmente superior al ARIMA (RMSE $236{,}36$ vs.\ $237{,}24$); esto evidencia que la serie sigue de cerca un proceso \textit{random walk}, donde el último valor observado es tan informativo como cualquier estructura lineal adicional. En el \textbf{VIX}, el modelo Naïve también supera al ARIMA en todas las métricas (RMSE $16{,}25$ vs.\ $18{,}87$), mientras que Holt es el peor de los tres, lo que sugiere que la tendencia local no es un componente relevante en esta serie. En el \textbf{CO\textsubscript{2}}, el ARIMA es ampliamente el mejor modelo ($R^2 = 0{,}28$, RMSE $= 2{,}80$), superando con holgura al Naïve y al Holt, cuyo desempeño es notablemente inferior; la tendencia suave y predecible de la serie favorece la estructura ARIMA. Finalmente, en \textbf{AirPassengers}, el ARIMA supera a ambos benchmarks, aunque sus métricas siguen siendo modestas ($R^2 = -0{,}23$), lo que refleja la dificultad de capturar la estacionalidad multiplicativa sin un modelo SARIMA explícito.
+
+En síntesis, el \textbf{ARIMA es el modelo ganador en CO\textsubscript{2} y AirPassengers}, mientras que para el S\&P~500 y el VIX el benchmark Naïve resulta competitivo o superior.
 
 \subsection{Diagnóstico de residuos}
 
+Un modelo bien especificado debe producir residuos que se comporten como ruido blanco, es decir, $\varepsilon_t \overset{iid}{\sim}(0,\sigma^2)$: media cero, varianza constante y ausencia de autocorrelación. El incumplimiento de estas condiciones indica que el modelo no ha capturado toda la estructura sistemática de la serie, y que los pronósticos resultantes pueden ser ineficientes \cite{box2008}.
+
+El diagnóstico se lleva a cabo mediante análisis gráfico de los residuos y dos tests formales:
+
+\textbf{Test de Ljung-Box:} contrasta la hipótesis nula de que los primeros $h$ coeficientes de autocorrelación de los residuos son conjuntamente iguales a cero:
+$$Q_{LB}(h) = T(T+2)\sum_{k=1}^{h}\frac{\hat{\rho}_k^2}{T-k} \sim \chi^2(h-p-q)$$
+donde $T$ es el tamaño muestral, $\hat{\rho}_k$ la autocorrelación muestral del residuo en el rezago $k$, y $p$, $q$ los órdenes del modelo. El rechazo de $H_0$ ($p < 0{,}05$) indica la presencia de estructura lineal no capturada por el modelo \cite{cryer2008}.
+
+\textbf{Test de Jarque-Bera:} contrasta la hipótesis nula de normalidad de los residuos mediante los momentos de tercer y cuarto orden:
+$$JB = \frac{T}{6}\left[S^2 + \frac{(K-3)^2}{4}\right] \sim \chi^2(2)$$
+donde $S$ es el coeficiente de asimetría y $K$ la curtosis.
+
+Las Figuras~\ref{fig:diag_sp500}--\ref{fig:diag_air} presentan los paneles de diagnóstico para cada modelo, compuestos por: residuos en el tiempo, residuos al cuadrado (heterocedasticidad/ARCH), distribución de residuos con curva normal teórica, Q-Q plot, FAC y FACP de residuos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_13_cell26.png}
+    \caption{S\&P~500 — ARIMA(1,\,1,\,0): diagnóstico de residuos.}
+    \label{fig:diag_sp500}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_14_cell26.png}
+    \caption{VIX — ARIMA(3,\,0,\,3): diagnóstico de residuos.}
+    \label{fig:diag_vix}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_15_cell26.png}
+    \caption{CO\textsubscript{2} — ARIMA(2,\,1,\,3): diagnóstico de residuos.}
+    \label{fig:diag_co2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_16_cell26.png}
+    \caption{AirPassengers — ARIMA(2,\,1,\,1): diagnóstico de residuos.}
+    \label{fig:diag_air}
+\end{figure}
+
+La Tabla~\ref{tab:tests_residuos} resume los resultados de los tests de Ljung-Box (en $h=10$ y $h=20$) y Jarque-Bera para cada modelo.
+
+\begin{table}[H]
+    \centering
+    \caption{Tests formales sobre residuos de los modelos seleccionados}
+    \label{tab:tests_residuos}
+    \begin{tabular}{llrll}
+        \toprule
+        \textbf{Serie} & \textbf{Test} & \textbf{$p$-valor} & \textbf{Resultado} \\
+        \midrule
+        \multirow{3}{*}{S\&P 500 ARIMA(1,1,0)}
+            & Ljung-Box $h=10$ & $1{,}0000$ & Ruido blanco \\
+            & Ljung-Box $h=20$ & $1{,}0000$ & Ruido blanco \\
+            & Jarque-Bera      & $0{,}0000$ & No normal (colas pesadas) \\
+        \midrule
+        \multirow{3}{*}{VIX ARIMA(3,0,3)}
+            & Ljung-Box $h=10$ & $0{,}0006$ & Autocorrelación residual \\
+            & Ljung-Box $h=20$ & $0{,}0279$ & Autocorrelación residual \\
+            & Jarque-Bera      & $0{,}0000$ & No normal (colas pesadas) \\
+        \midrule
+        \multirow{3}{*}{CO\textsubscript{2} ARIMA(2,1,3)}
+            & Ljung-Box $h=10$ & $0{,}0000$ & Autocorrelación residual \\
+            & Ljung-Box $h=20$ & $0{,}0000$ & Autocorrelación residual \\
+            & Jarque-Bera      & $0{,}0000$ & No normal (colas pesadas) \\
+        \midrule
+        \multirow{3}{*}{AirPassengers ARIMA(2,1,1)}
+            & Ljung-Box $h=10$ & $0{,}0008$ & Autocorrelación residual \\
+            & Ljung-Box $h=20$ & $0{,}0589$ & Ruido blanco \\
+            & Jarque-Bera      & $0{,}0000$ & No normal (colas pesadas) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los resultados del diagnóstico revelan un patrón consistente entre las cuatro series. En cuanto a la \textbf{normalidad}, el test de Jarque-Bera rechaza $H_0$ en todos los casos ($p = 0{,}0000$), lo que indica la presencia de colas pesadas en la distribución de los residuos. Este hallazgo es esperable en series financieras como el S\&P~500 y el VIX, donde eventos extremos generan observaciones atípicas que se alejan de la distribución normal \cite{tsay2005}; su presencia en el CO\textsubscript{2} y AirPassengers sugiere la influencia de observaciones anómalas aisladas, identificables en los paneles de residuos en el tiempo.
+
+Respecto a la \textbf{autocorrelación residual}, el S\&P~500 es el único modelo cuyos residuos superan el test de Ljung-Box en ambos horizontes ($p = 1{,}0000$), confirmando que el ARIMA(1,1,0) captura adecuadamente la estructura lineal de la serie. El VIX y el CO\textsubscript{2} presentan autocorrelación residual significativa en ambos horizontes, lo que indica que los modelos seleccionados no agotan toda la dependencia temporal de estas series; en el caso del CO\textsubscript{2}, esto es consistente con la estacionalidad no capturada por un ARIMA sin componente estacional. AirPassengers muestra autocorrelación en $h=10$ pero no en $h=20$, sugiriendo dependencia de corto plazo no modelada, también atribuible a la estacionalidad.
+
 \subsection{Pronóstico}
+
+El pronóstico $h$ pasos adelante se define como la esperanza condicional de $Y_{T+h}$ dado el conjunto de información disponible hasta $T$:
+$$\hat{Y}_{T+h|T} = E[Y_{T+h} \mid \mathcal{F}_T]$$
+
+El intervalo de predicción al 95\,\% se construye a partir de la varianza del error de pronóstico, que crece con el horizonte $h$ mediante los coeficientes de la representación MA$(\infty)$ del proceso:
+$$\hat{Y}_{T+h|T} \pm 1{,}96\,\hat{\sigma}_h, \qquad \hat{\sigma}_h^2 = \hat{\sigma}^2\sum_{j=0}^{h-1}\psi_j^2$$
+
+El comportamiento del pronóstico difiere según el orden de integración de cada serie:
+
+\begin{itemize}
+    \item \textbf{$I(1)$ sin deriva} (S\&P~500): el pronóstico puntual es plano (igual al último valor observado) y el intervalo de confianza se expande proporcionalmente a $\sqrt{h}$, reflejando la acumulación de incertidumbre propia del \textit{random walk}.
+    \item \textbf{$I(0)$} (VIX): el pronóstico converge a la media histórica de la serie (reversión a la media), con intervalos que se estabilizan a medida que $h$ crece.
+    \item \textbf{$I(1)$ con deriva} (CO\textsubscript{2}, AirPassengers): el pronóstico exhibe una tendencia lineal o exponencial creciente, reflejando la deriva estimada del proceso diferenciado \cite{hyndman2018}.
+\end{itemize}
+
+Las Figuras~\ref{fig:fc_sp500}--\ref{fig:fc_air} presentan los pronósticos a 40 y 24 pasos adelante para cada serie, junto con los intervalos de confianza al 95\,\%.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_17_cell28.png}
+    \caption{S\&P~500 — ARIMA(1,\,1,\,0): pronóstico 40 pasos adelante.}
+    \label{fig:fc_sp500}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_18_cell28.png}
+    \caption{VIX — ARIMA(3,\,0,\,3): pronóstico 40 pasos adelante.}
+    \label{fig:fc_vix}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_19_cell28.png}
+    \caption{CO\textsubscript{2} — ARIMA(2,\,1,\,3): pronóstico 24 pasos adelante.}
+    \label{fig:fc_co2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_20_cell28.png}
+    \caption{AirPassengers — ARIMA(2,\,1,\,1): pronóstico 24 pasos adelante.}
+    \label{fig:fc_air}
+\end{figure}
+
+Los pronósticos son consistentes con las propiedades teóricas de cada proceso. El \textbf{S\&P~500} (Figura~\ref{fig:fc_sp500}) proyecta un valor plano en torno a 6550, con un intervalo de confianza que se abre rápidamente hasta abarcar un rango de más de 1500 puntos a los 40 días; esto ilustra la imposibilidad práctica de predecir el nivel del mercado accionario en el corto plazo. El \textbf{VIX} (Figura~\ref{fig:fc_vix}) presenta una reversión gradual desde el nivel actual ($\approx 115$) hacia la media histórica ($\approx 103$), con un intervalo amplio que refleja la alta volatilidad intrínseca del índice. El \textbf{CO\textsubscript{2}} (Figura~\ref{fig:fc_co2}) exhibe el pronóstico más robusto: una tendencia creciente que proyecta concentraciones superiores a 434 ppm hacia 2028, con un intervalo de confianza relativamente estrecho, coherente con el buen desempeño predictivo observado en la evaluación Train/Test. Finalmente, \textbf{AirPassengers} (Figura~\ref{fig:fc_air}) proyecta una trayectoria creciente en torno a los 650 miles de pasajeros para 1963, aunque el amplio intervalo de confianza y la ausencia de estacionalidad en el pronóstico limitan su utilidad práctica, limitación que se aborda en la Sección~\ref{subsec:sarima_estacional}.
 
 \subsection{Modelo SARIMAX}
 
+El modelo SARIMAX extiende ARIMA incorporando variables exógenas contemporáneas $\mathbf{X}_t$:
+$$\phi(B)(1-B)^d y_t = \beta\,\mathbf{X}_t + \theta(B)\,\varepsilon_t$$
+
+Se estiman dos modelos complementarios que explotan la relación entre el S\&P~500 y el VIX:
+
+\begin{itemize}
+    \item \textbf{Modelo A:} $\Delta\text{VIX}_t = \text{ARIMA}(p,0,q) + \beta_A \cdot r^{SP}_t + \varepsilon_t$
+    \item \textbf{Modelo B:} $r^{SP}_t = \text{ARIMA}(p,0,q) + \beta_B \cdot \Delta\text{VIX}_t + \varepsilon_t$
+\end{itemize}
+
+La \textbf{hipótesis del efecto leverage} \cite{black1976} postula que $\beta_A < 0$: las caídas del mercado ($r^{SP} < 0$) generan incrementos en el VIX ($\Delta\text{VIX} > 0$). La relación es asimétrica: las caídas amplifican la volatilidad más que las subas equivalentes.
+
+La Figura~\ref{fig:sarimax} presenta los pronósticos de ambos modelos SARIMAX sobre el conjunto de testeo, junto con los diagramas de dispersión que ilustran la relación entre las variables exógenas y las dependientes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_21_cell32.png}
+    \caption{Modelos SARIMAX — Efecto leverage (S\&P~500 $\leftrightarrow$ VIX): pronósticos y relación entre variables.}
+    \label{fig:sarimax}
+\end{figure}
+
+Las Tablas~\ref{tab:sarimax_a} y~\ref{tab:sarimax_b} resumen los resultados de estimación y las métricas de cada modelo.
+
+\begin{table}[H]
+    \centering
+    \caption{Modelo A — SARIMAX: $\Delta\text{VIX}_t$ con regresor $r^{SP}_t$}
+    \label{tab:sarimax_a}
+    \begin{tabular}{lrll}
+        \toprule
+        \textbf{Parámetro} & \textbf{Valor} & \textbf{$p$-valor} & \textbf{Interpretación} \\
+        \midrule
+        Orden seleccionado & ARIMA(3,\,0,\,2) & --- & AIC $= 1431{,}75$ \\
+        $\beta_A$          & $-392{,}743$     & $0{,}0000$ & Significativo \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Efecto marginal:}} \\
+        Caída 1\,\% S\&P  & $\Delta\text{VIX}$ esperado & $= +3{,}93$ puntos & \\
+        Caída 5\,\% S\&P  & $\Delta\text{VIX}$ esperado & $= +19{,}64$ puntos & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Modelo A — Comparación de métricas: ARIMA puro vs.\ SARIMAX (VIX en niveles reconstruido)}
+    \label{tab:metricas_a}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{$R^2$} & \textbf{AIC} & \textbf{BIC} \\
+        \midrule
+        ARIMA(3,0,2) sin exóg. & $19{,}08$ & $15{,}79$ & $13{,}30$ & $-2{,}3808$ & $1431{,}75$ & $1452{,}05$ \\
+        SARIMAX $+$ sp\_ret    & $11{,}24$ &  $8{,}72$ &  $7{,}57$ & $-0{,}1721$ & $1292{,}09$ & $1315{,}78$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Modelo B — SARIMAX: $r^{SP}_t$ con regresor $\Delta\text{VIX}_t$}
+    \label{tab:sarimax_b}
+    \begin{tabular}{lrll}
+        \toprule
+        \textbf{Parámetro} & \textbf{Valor} & \textbf{$p$-valor} & \textbf{Interpretación} \\
+        \midrule
+        Orden seleccionado & ARIMA(2,\,0,\,3) & --- & AIC $= -1317{,}56$ \\
+        $\beta_B$          & $-0{,}00124$     & $0{,}0000$ & Significativo \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Efecto marginal:}} \\
+        $\Delta\text{VIX} = +1$ pto  & $r^{SP}$ esperado & $= -0{,}0012\ (-12{,}4\ \text{bps})$ & \\
+        $\Delta\text{VIX} = +5$ ptos & $r^{SP}$ esperado & $= -0{,}0062\ (-62{,}1\ \text{bps})$ & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Modelo B — Comparación de métricas: ARIMA puro vs.\ SARIMAX (S\&P~500 en niveles reconstruido)}
+    \label{tab:metricas_b}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{$R^2$} & \textbf{AIC} & \textbf{BIC} \\
+        \midrule
+        ARIMA(2,0,3) sin exóg. & $224{,}83$ & $158{,}37$ & $2{,}39$ & $-0{,}8706$ & $-1317{,}56$ & $-1297{,}25$ \\
+        SARIMAX $+$ $\Delta$VIX & $116{,}37$ &  $73{,}12$ & $1{,}11$ &  $0{,}4989$ & $-1464{,}21$ & $-1440{,}52$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los resultados confirman la hipótesis del efecto leverage en ambas direcciones. El coeficiente $\beta_A = -392{,}74$ ($p = 0{,}0000$) del Modelo A cuantifica el efecto negativo de los retornos del S\&P sobre los cambios en el VIX: una caída del 1\,\% en el mercado se asocia a un incremento esperado de 3{,}93 puntos en el VIX, y una caída del 5\,\% a casi 20 puntos. La incorporación del regresor reduce el RMSE de $19{,}08$ a $11{,}24$ y mejora el AIC en 139{,}66 unidades, evidenciando que los retornos del S\&P aportan poder explicativo más allá de la dinámica temporal propia del VIX.
+
+En el Modelo B, el coeficiente $\beta_B = -0{,}00124$ ($p = 0{,}0000$) indica que un incremento de 1 punto en el VIX se asocia a una caída de 12{,}4 puntos básicos en los retornos del S\&P. La mejora en el Modelo B es aún más pronunciada: el $R^2$ pasa de $-0{,}87$ a $0{,}50$, el RMSE se reduce a la mitad ($224{,}83 \to 116{,}37$) y el AIC mejora en 146{,}65 unidades. Estos resultados confirman que la relación entre volatilidad y retornos es bidireccional y estadísticamente robusta \cite{tsay2005}, y que el SARIMAX representa una mejora sustancial sobre el ARIMA univariado para ambas series.
+
 \subsection{Modelo SARIMA estacional}
+\label{subsec:sarima_estacional}
+
+Las series CO\textsubscript{2} y AirPassengers exhiben patrones estacionales de período $s = 12$ meses. El modelo SARIMA$(p,d,q)(P,D,Q)_{12}$ es:
+$$\phi_p(B)\,\Phi_P(B^{12})\,(1-B)^d(1-B^{12})^D\, y_t = c + \theta_q(B)\,\Theta_Q(B^{12})\,\varepsilon_t$$
+
+El \textbf{Airline Model} de Box \& Jenkins (1970) corresponde al caso SARIMA$(0,1,1)(0,1,1)_{12}$ aplicado sobre $\log(y_t)$, donde cada operador cumple una función específica:
+\begin{itemize}
+    \item $(1-B)$: elimina la tendencia lineal en escala logarítmica
+    \item $(1-B^{12})$: elimina la estacionalidad anual
+    \item $\theta_1$: captura la correlación de media móvil de corto plazo
+    \item $\Theta_1$: captura la correlación con el mismo mes del año anterior
+\end{itemize}
+
+\textbf{Aproximación HEGY:} el test completo de \citeA{hegy1990} contrasta raíces unitarias en cada frecuencia estacional. La aproximación práctica consiste en aplicar el test ADF sobre $\Delta_{12}\,y_t$: si se rechaza $H_0$, la diferenciación estacional de orden $D=1$ es suficiente para eliminar la raíz unitaria estacional \cite{enders2009}.
+
+La Figura~\ref{fig:descomposicion} presenta la descomposición estacional aditiva de ambas series, y la Figura~\ref{fig:fac_estacional} las FAC de las series diferenciadas para justificar la elección de $d$ y $D$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_22_cell35.png}
+    \caption{Descomposición estacional aditiva (período $= 12$ meses): CO\textsubscript{2} y log(AirPassengers).}
+    \label{fig:descomposicion}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_23_cell36.png}
+    \caption{FAC — Diagnóstico de diferenciación estacional: CO\textsubscript{2} y AirPassengers.}
+    \label{fig:fac_estacional}
+\end{figure}
+
+La Tabla~\ref{tab:aic_sarima} compara los criterios de información del Airline Model frente al ARIMA sin componente estacional, y la Tabla~\ref{tab:hegy} reporta la aproximación al test HEGY.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparación AIC/BIC: ARIMA sin estacional vs.\ SARIMA$(0,1,1)(0,1,1)_{12}$}
+    \label{tab:aic_sarima}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{Serie} & \textbf{Modelo} & \textbf{AIC} & \textbf{BIC} \\
+        \midrule
+        \multirow{2}{*}{CO\textsubscript{2}}
+            & ARIMA(0,1,1) sin estacional      & $553{,}06$   & $562{,}85$ \\
+            & SARIMA(0,1,1)(0,1,1)$_{12}$      & $158{,}72$   & $171{,}52$ \\
+        \midrule
+        \multirow{2}{*}{AirPassengers}
+            & ARIMA(0,1,1) sin estacional      & $-237{,}51$  & $-228{,}62$ \\
+            & SARIMA(0,1,1)(0,1,1)$_{12}$      & $-481{,}40$  & $-469{,}90$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Aproximación HEGY — ADF sobre $\Delta_{12}$ (diferencia estacional)}
+    \label{tab:hegy}
+    \begin{tabular}{lrrll}
+        \toprule
+        \textbf{Serie} & \textbf{ADF stat} & \textbf{$p$-valor} & \textbf{Conclusión} \\
+        \midrule
+        CO\textsubscript{2}          & $-3{,}3889$ & $0{,}0113$ & Rechaza $H_0$ $\Rightarrow$ $D=1$ suficiente \\
+        log(AirPassengers)           & $-2{,}7096$ & $0{,}0724$ & No rechaza $H_0$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Las Figuras~\ref{fig:fc_sarima_co2} y~\ref{fig:fc_sarima_air} presentan los pronósticos del Airline Model para cada serie.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_24_cell37.png}
+    \caption{CO\textsubscript{2} — Pronóstico SARIMA$(0,1,1)(0,1,1)_{12}$: 24 meses adelante.}
+    \label{fig:fc_sarima_co2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_25_cell37.png}
+    \caption{AirPassengers — Pronóstico SARIMA$(0,1,1)(0,1,1)_{12}$: 36 meses adelante.}
+    \label{fig:fc_sarima_air}
+\end{figure}
+
+Los resultados confirman la superioridad del modelo estacional en ambas series. Para el \textbf{CO\textsubscript{2}}, la descomposición revela una tendencia creciente sostenida de aproximadamente $+2$ ppm/año atribuible a emisiones, y una componente estacional de amplitud $\approx 7$ ppm: las concentraciones alcanzan su máximo en mayo  y su mínimo en septiembre. El Airline Model reduce el AIC de $553{,}06$ a $158{,}72$, una mejora de 394 unidades, y el pronóstico a 24 meses reproduce fielmente tanto la tendencia como el patrón estacional (Figura~\ref{fig:fc_sarima_co2}). El test ADF sobre $\Delta_{12}$ rechaza $H_0$ ($p = 0{,}011$), confirmando que $D=1$ es suficiente.
+
+Para \textbf{AirPassengers}, la transformación logarítmica linealiza la estacionalidad multiplicativa, y el Airline Model reproduce con precisión los picos estivales y los valles invernales (Figura~\ref{fig:fc_sarima_air}). La mejora en AIC es de 243{,}89 unidades ($-237{,}51 \to -481{,}40$), y el pronóstico a 36 meses proyecta una trayectoria creciente con oscilaciones estacionales bien definidas, en contraste con el pronóstico plano del ARIMA sin componente estacional presentado en la Sección~\ref{subsec:arima_estimacion}. El test ADF sobre $\Delta_{12}\log(Air)$ no rechaza $H_0$ ($p = 0{,}072$), aunque la mejora sustancial en los criterios de información justifica la inclusión de la diferenciación estacional \cite{box2008}.
+\label{subsec:sarima_estacional}
 
 \newpage
 \section{Conclusiones}
+
+El presente trabajo analizó cuatro series temporales de naturaleza heterogénea —S\&P~500, VIX, CO\textsubscript{2} y AirPassengers— a través de once instancias metodológicas. Los resultados permiten extraer conclusiones particulares para cada serie y generales respecto al análisis de series temporales.
+
+\subsection*{S\&P 500}
+
+El índice S\&P~500 exhibe un comportamiento de caminata aleatoria con deriva ($I(1)$): la primera diferencia (retornos diarios) es estacionaria, con media cercana a cero y varianza relativamente estable. El modelo ARIMA$(1,1,0)$ seleccionado por criterios de información captura adecuadamente la dependencia serial mínima observada en los retornos. En términos predictivos, la comparación con el modelo de referencia Naïve pone de manifiesto que los retornos bursátiles son esencialmente impredecibles a corto plazo: el modelo ARIMA no supera de forma consistente al Naïve, resultado coherente con la hipótesis de mercados eficientes en su forma débil \cite{hamilton1994}. Los residuos del modelo final no presentan autocorrelación significativa (Ljung-Box, $p > 0{,}05$), aunque la prueba de normalidad de Jarque-Bera detecta colas pesadas, característica estructural de los retornos financieros.
+
+\subsection*{VIX}
+
+El índice de volatilidad VIX resultó ser la serie más difícil de modelar dentro del conjunto analizado. A diferencia de las demás, es estacionaria en niveles ($I(0)$), con marcada reversión a la media, pero presenta episodios de alta volatilidad transitoria que introducen no linealidades. El modelo ARIMA$(3,0,3)$ ajustó aceptablemente en muestra, pero los pronósticos fuera de muestra fueron superados por el modelo Naïve, lo que refleja la naturaleza reactiva y de difícil anticipación del indicador de incertidumbre. La incorporación de retornos del S\&P~500 como variable exógena en el marco SARIMAX mejoró sustancialmente el ajuste ($R^2$ pasó de $-1{,}98$ a $-0{,}17$), confirmando que los movimientos del índice accionario constituyen un predictor relevante de la volatilidad implícita.
+
+\subsection*{CO\textsubscript{2}}
+
+La serie de concentración atmosférica de CO\textsubscript{2} demostró ser la más regular y predecible del conjunto. La tendencia creciente sostenida de aproximadamente $+2$ ppm/año y la estacionalidad determinística de amplitud $\approx 7$ ppm hacen que el Airline Model SARIMA$(0,1,1)(0,1,1)_{12}$ sea especialmente adecuado. La mejora en AIC frente al ARIMA no estacional fue de 394 unidades ($553{,}06 \to 158{,}72$), y las métricas predictivas fueron las más favorables del estudio (R\textsuperscript{2} = $0{,}28$ en el conjunto de evaluación), lo que valida la necesidad de modelar explícitamente la componente estacional. El pronóstico a 24 meses reproduce fielmente la trayectoria observada, incluyendo los picos de mayo y los valles de septiembre, con relevancia directa para el monitoreo del cambio climático.
+
+\subsection*{AirPassengers}
+
+La serie de pasajeros aéreos ilustra con claridad el caso de estacionalidad multiplicativa: la amplitud de las oscilaciones crece proporcionalmente al nivel de la serie, lo que exigió la transformación logarítmica como paso previo al ajuste. El modelo ARIMA$(2,1,1)$ sobre la serie transformada resultó insuficiente para capturar la estacionalidad anual, con un AIC de $-237{,}51$. La incorporación de diferenciación estacional en el Airline Model redujo el AIC a $-481{,}40$, una mejora de 243 unidades, y los pronósticos a 36 meses proyectan una trayectoria ascendente con patrones estacionales bien definidos. Este caso subraya que ignorar la estructura estacional en la especificación del modelo genera pronósticos estructuralmente incorrectos.
+
+\subsection*{Efecto leverage y modelo SARIMAX}
+
+El análisis SARIMAX reveló la existencia de un efecto leverage asimétrico y significativo entre el S\&P~500 y el VIX. El coeficiente $\hat{\beta}_A = -392{,}7$ ($p < 0{,}001$) indica que retornos negativos del S\&P~500 generan incrementos desproporcionados en el VIX, mientras que $\hat{\beta}_B = -0{,}00124$ ($p < 0{,}001$) confirma que niveles elevados de VIX se asocian con rendimientos negativos del índice accionario. Estos resultados son consistentes con la literatura sobre la relación inversa entre rendimiento bursátil y volatilidad implícita \cite{tsay2010}, y otorgan sustento empírico al uso de variables exógenas para mejorar la capacidad predictiva en series financieras interrelacionadas.
+
+\subsection*{Reflexión metodológica general}
+
+El análisis comparativo entre modelos ARIMA, SARIMA, SARIMAX y benchmarks (Naïve, Holt ETS-AAN) pone de manifiesto que no existe un modelo universalmente superior: la elección óptima depende de las características estructurales de cada serie. Las principales lecciones metodológicas son:
+
+\begin{enumerate}
+    \item \textbf{Diagnóstico previo}: el análisis de estacionariedad mediante pruebas ADF y KPSS, complementado con la inspección visual de FAS, FAC y FACP, constituye un paso insustituible antes de la especificación del modelo.
+    \item \textbf{Estacionalidad}: para series con componente estacional clara (CO\textsubscript{2}, AirPassengers), la extensión al marco SARIMA genera mejoras sustanciales que justifican ampliamente la mayor complejidad paramétrica.
+    \item \textbf{Variables exógenas}: cuando se dispone de series relacionadas económica o físicamente, el marco SARIMAX permite capturar mecanismos de transmisión que los modelos univariados no pueden recoger.
+    \item \textbf{Evaluación fuera de muestra}: los criterios de información (AIC, BIC) son útiles para la selección en muestra, pero la evaluación mediante métricas de error en el conjunto de prueba (RMSE, MAE, MAPE, R\textsuperscript{2}) es la medida definitiva de utilidad predictiva.
+    \item \textbf{Diagnóstico de residuos}: un modelo bien especificado debe producir residuos que se comporten como ruido blanco gaussiano; las pruebas de Ljung-Box y Jarque-Bera permiten verificar estas condiciones formalmente.
+\end{enumerate}
+
+En conjunto, los resultados obtenidos demuestran la utilidad del enfoque Box-Jenkins y sus extensiones para el análisis y pronóstico de series temporales de distinta naturaleza, al mismo tiempo que evidencian las limitaciones inherentes a la modelización lineal cuando las series presentan no linealidades, heterocedasticidad condicional o comportamientos extremos.
 
 % ══════════════════════════════════════════════════════════════════════════
 % REFERENCIAS
 % ══════════════════════════════════════════════════════════════════════════
 \newpage
+\addcontentsline{toc}{section}{Referencias}
 \bibliographystyle{apacite}
 \bibliography{referencias}
-
-% ══════════════════════════════════════════════════════════════════════════
-% APÉNDICES
-% ══════════════════════════════════════════════════════════════════════════
-\newpage
-\appendix
-\section{Apéndice: Código fuente}
 
 \end{document}
