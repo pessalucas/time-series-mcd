@@ -469,7 +469,7 @@ Las Tablas~\ref{tab:coef_sp500}--\ref{tab:coef_air} presentan los coeficientes e
 
 En relación con la significatividad individual de los coeficientes, se observa que algunos parámetros presentan $p$-valores superiores a $0{,}05$ en los modelos seleccionados: ma.L1 y ma.L3 en el ARIMA(3,0,3) del VIX, ma.L2 y ma.L3 en el ARIMA(2,1,3) del CO\textsubscript{2}, y ma.L1 en el ARIMA(2,1,1) de AirPassengers. Esto indica que, bajo el test $H_0: \theta_i = 0$, no existe evidencia suficiente para rechazar que dichos coeficientes sean iguales a cero.
 
-No obstante, la selección de estos modelos se fundamenta en el criterio AIC, que penaliza la complejidad y favorece soluciones que equilibran ajuste y parsimonia. Dado que los modelos seleccionados minimizan el AIC dentro del espacio de búsqueda, se opta por mantenerlos como modelos base. Los coeficientes no significativos constituyen una limitación a considerar en la interpretación, pero no invalidan la selección, en línea con lo señalado por Hyndman \& Athanasopoulos (2018).
+No obstante, la selección de estos modelos se fundamenta en el criterio AIC, que penaliza la complejidad y favorece soluciones que equilibran ajuste y parsimonia. Dado que los modelos seleccionados minimizan el AIC dentro del espacio de búsqueda, se opta por mantenerlos como modelos base. Los coeficientes no significativos constituyen una limitación a considerar en la interpretación, pero no invalidan la selección, en línea con lo señalado por \citeA{hyndman2018}.
 
 \subsection{Evaluación Train/Test}
 
@@ -882,7 +882,6 @@ Las Figuras~\ref{fig:fc_sarima_co2} y~\ref{fig:fc_sarima_air} presentan los pron
 Los resultados confirman la superioridad del modelo estacional en ambas series. Para el \textbf{CO\textsubscript{2}}, la descomposición revela una tendencia creciente sostenida de aproximadamente $+2$ ppm/año atribuible a emisiones, y una componente estacional de amplitud $\approx 7$ ppm: las concentraciones alcanzan su máximo en mayo  y su mínimo en septiembre. El Airline Model reduce el AIC de $553{,}06$ a $158{,}72$, una mejora de 394 unidades, y el pronóstico a 24 meses reproduce fielmente tanto la tendencia como el patrón estacional (Figura~\ref{fig:fc_sarima_co2}). El test ADF sobre $\Delta_{12}$ rechaza $H_0$ ($p = 0{,}011$), confirmando que $D=1$ es suficiente.
 
 Para \textbf{AirPassengers}, la transformación logarítmica linealiza la estacionalidad multiplicativa, y el Airline Model reproduce con precisión los picos estivales y los valles invernales (Figura~\ref{fig:fc_sarima_air}). La mejora en AIC es de 243{,}89 unidades ($-237{,}51 \to -481{,}40$), y el pronóstico a 36 meses proyecta una trayectoria creciente con oscilaciones estacionales bien definidas, en contraste con el pronóstico plano del ARIMA sin componente estacional presentado en la Sección~\ref{subsec:arima_estimacion}. El test ADF sobre $\Delta_{12}\log(Air)$ no rechaza $H_0$ ($p = 0{,}072$), aunque la mejora sustancial en los criterios de información justifica la inclusión de la diferenciación estacional \cite{box2008}.
-\label{subsec:sarima_estacional}
 
 \newpage
 \section{Conclusiones}
@@ -927,7 +926,6 @@ En conjunto, los resultados obtenidos demuestran la utilidad del enfoque Box-Jen
 % REFERENCIAS
 % ══════════════════════════════════════════════════════════════════════════
 \newpage
-\addcontentsline{toc}{section}{Referencias}
 \bibliographystyle{apacite}
 \bibliography{referencias}
 

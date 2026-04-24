@@ -1,0 +1,414 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+Black%
+}{%
+Black%
+}{%
+{\protect \APACyear {1976}}%
+}]{%
+black1976}
+\APACinsertmetastar {%
+black1976}%
+\begin{APACrefauthors}%
+Black, F.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1976}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Studies of Stock Market Volatility Changes} {Studies of
+  stock market volatility changes}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Proceedings of the American Statistical Association,
+  Business and Economic Statistics Section}{}{}{177--181}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Box%
+\ \BBA {} Jenkins%
+}{%
+Box%
+\ \BBA {} Jenkins%
+}{%
+{\protect \APACyear {1970}}%
+}]{%
+box1970}
+\APACinsertmetastar {%
+box1970}%
+\begin{APACrefauthors}%
+Box, G\BPBI E\BPBI P.%
+\BCBT {}\ \BBA {} Jenkins, G\BPBI M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{1970}.
+\newblock
+\APACrefbtitle {Time Series Analysis: Forecasting and Control} {Time series
+  analysis: Forecasting and control}.
+\newblock
+\APACaddressPublisher{San Francisco}{Holden-Day}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Box%
+, Jenkins%
+\BCBL {}\ \BBA {} Reinsel%
+}{%
+Box%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2008}}%
+}]{%
+box2008}
+\APACinsertmetastar {%
+box2008}%
+\begin{APACrefauthors}%
+Box, G\BPBI E\BPBI P.%
+, Jenkins, G\BPBI M.%
+\BCBL {}\ \BBA {} Reinsel, G\BPBI C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2008}.
+\newblock
+\APACrefbtitle {Time Series Analysis: Forecasting and Control} {Time series
+  analysis: Forecasting and control}\ (\PrintOrdinal{4}\ \BEd).
+\newblock
+\APACaddressPublisher{Hoboken, NJ}{John Wiley \& Sons}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Box%
+, Jenkins%
+, Reinsel%
+\BCBL {}\ \BBA {} Ljung%
+}{%
+Box%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2015}}%
+}]{%
+box2015}
+\APACinsertmetastar {%
+box2015}%
+\begin{APACrefauthors}%
+Box, G\BPBI E\BPBI P.%
+, Jenkins, G\BPBI M.%
+, Reinsel, G\BPBI C.%
+\BCBL {}\ \BBA {} Ljung, G\BPBI M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2015}.
+\newblock
+\APACrefbtitle {Time Series Analysis: Forecasting and Control} {Time series
+  analysis: Forecasting and control}\ (\PrintOrdinal{5}\ \BEd).
+\newblock
+\APACaddressPublisher{Hoboken, NJ}{John Wiley \& Sons}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Chatfield%
+\ \BBA {} Xing%
+}{%
+Chatfield%
+\ \BBA {} Xing%
+}{%
+{\protect \APACyear {2019}}%
+}]{%
+chatfield2019}
+\APACinsertmetastar {%
+chatfield2019}%
+\begin{APACrefauthors}%
+Chatfield, C.%
+\BCBT {}\ \BBA {} Xing, H.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2019}.
+\newblock
+\APACrefbtitle {The Analysis of Time Series: An Introduction with {R}} {The
+  analysis of time series: An introduction with {R}}\ (\PrintOrdinal{7}\ \BEd).
+\newblock
+\APACaddressPublisher{Boca Raton, FL}{CRC Press / Chapman \& Hall}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Cryer%
+\ \BBA {} Chan%
+}{%
+Cryer%
+\ \BBA {} Chan%
+}{%
+{\protect \APACyear {2008}}%
+}]{%
+cryer2008}
+\APACinsertmetastar {%
+cryer2008}%
+\begin{APACrefauthors}%
+Cryer, J\BPBI D.%
+\BCBT {}\ \BBA {} Chan, K\BHBI S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2008}.
+\newblock
+\APACrefbtitle {Time Series Analysis: With Applications in {R}} {Time series
+  analysis: With applications in {R}}\ (\PrintOrdinal{2}\ \BEd).
+\newblock
+\APACaddressPublisher{New York}{Springer}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Diebold%
+}{%
+Diebold%
+}{%
+{\protect \APACyear {2007}}%
+}]{%
+diebold2007}
+\APACinsertmetastar {%
+diebold2007}%
+\begin{APACrefauthors}%
+Diebold, F\BPBI X.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2007}.
+\newblock
+\APACrefbtitle {Elements of Forecasting} {Elements of forecasting}\
+  (\PrintOrdinal{4}\ \BEd).
+\newblock
+\APACaddressPublisher{Mason, OH}{Thomson South-Western}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Enders%
+}{%
+Enders%
+}{%
+{\protect \APACyear {2009}}%
+}]{%
+enders2009}
+\APACinsertmetastar {%
+enders2009}%
+\begin{APACrefauthors}%
+Enders, W.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2009}.
+\newblock
+\APACrefbtitle {Applied Econometric Time Series} {Applied econometric time
+  series}\ (\PrintOrdinal{3}\ \BEd).
+\newblock
+\APACaddressPublisher{Hoboken, NJ}{John Wiley \& Sons}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Hamilton%
+}{%
+Hamilton%
+}{%
+{\protect \APACyear {1994}}%
+}]{%
+hamilton1994}
+\APACinsertmetastar {%
+hamilton1994}%
+\begin{APACrefauthors}%
+Hamilton, J\BPBI D.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{1994}.
+\newblock
+\APACrefbtitle {Time Series Analysis} {Time series analysis}.
+\newblock
+\APACaddressPublisher{Princeton, NJ}{Princeton University Press}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Hylleberg%
+, Engle%
+, Granger%
+\BCBL {}\ \BBA {} Yoo%
+}{%
+Hylleberg%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {1990}}%
+}]{%
+hegy1990}
+\APACinsertmetastar {%
+hegy1990}%
+\begin{APACrefauthors}%
+Hylleberg, S.%
+, Engle, R\BPBI F.%
+, Granger, C\BPBI W\BPBI J.%
+\BCBL {}\ \BBA {} Yoo, B\BPBI S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1990}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Seasonal Integration and Cointegration} {Seasonal
+  integration and cointegration}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Econometrics}{44}{1--2}{215--238}.
+\newblock
+\begin{APACrefDOI} \doi{10.1016/0304-4076(90)90080-D} \end{APACrefDOI}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Hyndman%
+\ \BBA {} Athanasopoulos%
+}{%
+Hyndman%
+\ \BBA {} Athanasopoulos%
+}{%
+{\protect \APACyear {2018}}%
+}]{%
+hyndman2018}
+\APACinsertmetastar {%
+hyndman2018}%
+\begin{APACrefauthors}%
+Hyndman, R\BPBI J.%
+\BCBT {}\ \BBA {} Athanasopoulos, G.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2018}.
+\newblock
+\APACrefbtitle {Forecasting: Principles and Practice} {Forecasting: Principles
+  and practice}\ (\PrintOrdinal{2}\ \BEd).
+\newblock
+\APACaddressPublisher{Melbourne, Australia}{OTexts}.
+\newblock
+\begin{APACrefURL} \url{https://otexts.com/fpp2} \end{APACrefURL}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kwiatkowski%
+, Phillips%
+, Schmidt%
+\BCBL {}\ \BBA {} Shin%
+}{%
+Kwiatkowski%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {1992}}%
+}]{%
+kwiatkowski1992}
+\APACinsertmetastar {%
+kwiatkowski1992}%
+\begin{APACrefauthors}%
+Kwiatkowski, D.%
+, Phillips, P\BPBI C\BPBI B.%
+, Schmidt, P.%
+\BCBL {}\ \BBA {} Shin, Y.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1992}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Testing the Null Hypothesis of Stationarity Against the
+  Alternative of a Unit Root} {Testing the null hypothesis of stationarity
+  against the alternative of a unit root}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Econometrics}{54}{1--3}{159--178}.
+\newblock
+\begin{APACrefDOI} \doi{10.1016/0304-4076(92)90104-Y} \end{APACrefDOI}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Levendis%
+}{%
+Levendis%
+}{%
+{\protect \APACyear {2018}}%
+}]{%
+levendis2018}
+\APACinsertmetastar {%
+levendis2018}%
+\begin{APACrefauthors}%
+Levendis, J\BPBI D.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2018}.
+\newblock
+\APACrefbtitle {Time Series Econometrics: Learning Through Replication} {Time
+  series econometrics: Learning through replication}.
+\newblock
+\APACaddressPublisher{Cham, Switzerland}{Springer}.
+\newblock
+\begin{APACrefDOI} \doi{10.1007/978-3-319-98282-3} \end{APACrefDOI}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Pe{\~n}a%
+}{%
+Pe{\~n}a%
+}{%
+{\protect \APACyear {2010}}%
+}]{%
+pena2010}
+\APACinsertmetastar {%
+pena2010}%
+\begin{APACrefauthors}%
+Pe{\~n}a, D.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2010}.
+\newblock
+\APACrefbtitle {An{\'a}lisis de series temporales} {An{\'a}lisis de series
+  temporales}.
+\newblock
+\APACaddressPublisher{Madrid}{Alianza Editorial}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Tsay%
+}{%
+Tsay%
+}{%
+{\protect \APACyear {2005}}%
+}]{%
+tsay2005}
+\APACinsertmetastar {%
+tsay2005}%
+\begin{APACrefauthors}%
+Tsay, R\BPBI S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2005}.
+\newblock
+\APACrefbtitle {Analysis of Financial Time Series} {Analysis of financial time
+  series}\ (\PrintOrdinal{2}\ \BEd).
+\newblock
+\APACaddressPublisher{Hoboken, NJ}{John Wiley \& Sons}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Tsay%
+}{%
+Tsay%
+}{%
+{\protect \APACyear {2010}}%
+}]{%
+tsay2010}
+\APACinsertmetastar {%
+tsay2010}%
+\begin{APACrefauthors}%
+Tsay, R\BPBI S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2010}.
+\newblock
+\APACrefbtitle {Analysis of Financial Time Series} {Analysis of financial time
+  series}\ (\PrintOrdinal{3}\ \BEd).
+\newblock
+\APACaddressPublisher{Hoboken, NJ}{John Wiley \& Sons}.
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}
